@@ -1,5 +1,5 @@
 name:                Learning
-version:             0.1.0.0
+version:             0.0.0
 github:              "masterdezign/Learning"
 license:             BSD3
 author:              "Bogdan Penkovsky"
@@ -21,6 +21,8 @@ description:         Please see the README on Github at <https://github.com/mast
 
 dependencies:
 - base >= 4.7 && < 5
+- hmatrix >= 0.18.0.0
+- vector
 
 library:
   source-dirs: src
