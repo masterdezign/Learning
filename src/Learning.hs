@@ -16,7 +16,8 @@ module Learning (
   -- * Supervised learning
   , Teacher
   , teacher
-  , Classifier
+  , Classifier (..)
+  , Regressor (..)
   , Readout
   , learnClassifier
   , learnRegressor
