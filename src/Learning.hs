@@ -87,12 +87,13 @@ pca maxDim xs = let u' = pca' maxDim xs
                    , _decompress = flatten. (u <>)
                    }
 
--- | Classifier function that maps some network state
--- into a categorical output
+-- | Classifier function that maps some network state with measurements as matrix columns
+-- and features as rows, into a categorical output.
 newtype Classifier a = Classifier { classify :: Matrix Double -> a }
 
--- | Regressor function that maps some network state
--- into a continuous vectorial output
+-- | Regressor function that maps some feature matrix
+-- into a continuous multidimensional output. The feature matrix is expected
+-- to have columns corresponding to measurements (data points) and rows, features.
 newtype Regressor = Regressor { predict :: Matrix Double -> Vector Double }
 
 -- | Linear readout (matrix)
