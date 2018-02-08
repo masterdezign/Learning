@@ -39,14 +39,14 @@ import qualified Data.Vector.Storable as V
 data Dataset a b = Dataset
   { _samples :: [a]
   , _labels :: [b]
-  , _raw :: [(a, b)]
+  , toList :: [(a, b)]
   }
 
 -- | Create a `Dataset` from list of samples (first) and labels (second)
 fromList :: [(a, b)] -> Dataset a b
 fromList xs = let (samples', labels') = unzip xs
               in Dataset
-                 { _raw = xs
+                 { Learning.toList = xs
                  , _samples = samples'
                  , _labels = labels'
                  }
