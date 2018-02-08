@@ -18,7 +18,8 @@ module Learning (
   , teacher
   , Classifier
   , Readout
-  , learn
+  , learnClassifier
+  , learnRegressor
   , learn'
   , scores
   , winnerTakesAll
@@ -32,7 +33,20 @@ import           Numeric.LinearAlgebra
 import qualified Data.Vector.Storable as V
 
 -- | A dataset representation for supervised learning
-data Dataset a b = Dataset { _samples :: [a], _labels :: [b] }
+data Dataset a b = Dataset
+  { _samples :: [a]
+  , _labels :: [b]
+  , _raw :: [(a, b)]
+  }
+
+-- | Create a `Dataset` from list of samples (first) and labels (second)
+fromList :: [(a, b)] -> Dataset a b
+fromList xs = let (samples', labels') = unzip xs
+              in Dataset
+                 { _raw = xs
+                 , _samples = samples'
+                 , _labels = labels'
+                 }
 
 -- | Computes "covariance matrix", alternative to (snd. meanCov).
 -- Source: https://hackage.haskell.org/package/mltool-0.1.0.2/docs/src/MachineLearning.PCA.html
@@ -73,7 +87,11 @@ pca maxDim xs = let u' = pca' maxDim xs
 
 -- | Classifier function that maps some network state
 -- into a categorical output
-type Classifier a = Matrix Double -> a
+newtype Classifier a = Classifier { classify :: Matrix Double -> a }
+
+-- | Regressor function that maps some network state
+-- into a continuous vectorial output
+newtype Regressor = Regressor { predict :: Matrix Double -> Vector Double }
 
 -- | Linear readout (matrix)
 type Readout = Matrix Double
@@ -89,23 +107,42 @@ type Readout = Matrix Double
 type Teacher = Matrix Double
 
 -- | Perform supervised learning (ridge regression) and create
--- a linear classifier function.
--- The regression is run with regularization parameter mu=1e-4.
-learn
+-- a linear `Classifier` function.
+-- The regression is run with regularization parameter μ = 1e-4.
+learnClassifier
   :: (V.Storable a, Eq a) =>
-     Vector a  -- ^ All possible outcomes (classes) list
-     -> Matrix Double  -- ^ Network state (nonlinear response)
-     -> Matrix Double  -- ^ Horizontally concatenated `Teacher` matrices
+     Vector a
+     -- ^ All possible outcomes (classes) list
+     -> Matrix Double
+     -- ^ Network state (nonlinear response) where each matrix column corresponds to a measurement (data point)
+     -- and each row corresponds to a feature
+     -> Matrix Double
+     -- ^ Horizontally concatenated `Teacher` matrices where each row corresponds to a desired class
      -> Either String (Classifier a)
-learn klasses xs teacher' =
+learnClassifier klasses xs teacher' =
   case learn' xs teacher' of
-    Just readout -> Right (classify readout klasses)
+    Just readout -> Right (classify' readout klasses)
     Nothing -> Left "Couldn't learn: check `xs` matrix properties"
-{-# SPECIALIZE learn
+{-# SPECIALIZE learnClassifier
   :: Vector Int
      -> Matrix Double
      -> Matrix Double
      -> Either String (Classifier Int) #-}
+
+-- | Perform supervised learning (ridge regression) and create
+-- a linear `Regressor` function.
+learnRegressor
+  :: Matrix Double
+  -- ^ Feature matrix with data points (measurements) as colums and features as rows
+  -> Matrix Double
+  -- ^ Desired outputs matrix corresponding to data point columns.
+  -- In case of scalar (one-dimensional) prediction output, it should be a single row matrix.
+  -> Either String Regressor
+learnRegressor xs target =
+  case learn' xs target of
+    Just readout -> let rgr = Regressor $ flatten. (readout <>)
+                    in Right rgr
+    Nothing -> Left "Couldn't learn: check `xs` matrix properties"
 
 -- | Create a linear `Readout` using the ridge regression.
 -- Similar to @learn@, but instead of a `Classifier` function
@@ -151,8 +188,9 @@ winnerTakesAll
   => Readout  -- ^ `Readout` matrix
   -> Vector a  -- ^ Vector of possible classes
   -> Classifier a  -- ^ `Classifier`
-winnerTakesAll readout klasses response = klasses V.! klass
-  where klass = maxIndex $ scores readout response
+winnerTakesAll readout klasses = Classifier clf
+  where clf x = let klass = maxIndex $ scores readout x
+                in klasses V.! klass
 
 -- | Evaluate the network state (nonlinear response) according
 -- to some `Readout` matrix.
@@ -165,11 +203,11 @@ scores trW response = evalScores
         -- Sum the elements in each row
         evalScores = w #> vector (replicate (cols w) 1.0)
 
-classify
+classify'
   :: (V.Storable a, Eq a)
      => Matrix Double -> Vector a -> Classifier a
-classify = winnerTakesAll
-{-# SPECIALIZE classify
+classify' = winnerTakesAll
+{-# SPECIALIZE classify'
   :: Matrix Double -> Vector Int -> Classifier Int
   #-}
 
