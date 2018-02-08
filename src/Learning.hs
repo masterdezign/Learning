@@ -94,7 +94,7 @@ newtype Classifier a = Classifier { classify :: Matrix Double -> a }
 -- | Regressor function that maps some feature matrix
 -- into a continuous multidimensional output. The feature matrix is expected
 -- to have columns corresponding to measurements (data points) and rows, features.
-newtype Regressor = Regressor { predict :: Matrix Double -> Vector Double }
+newtype Regressor = Regressor { predict :: Matrix Double -> Matrix Double }
 
 -- | Linear readout (matrix)
 type Readout = Matrix Double
@@ -143,7 +143,7 @@ learnRegressor
   -> Either String Regressor
 learnRegressor xs target =
   case learn' xs target of
-    Just readout -> let rgr = Regressor $ flatten. (readout <>)
+    Just readout -> let rgr = Regressor (readout <>)
                     in Right rgr
     Nothing -> Left "Couldn't learn: check `xs` matrix properties"
 
