@@ -27,6 +27,7 @@ module Learning (
   -- * Evaluation
   , errors
   , errorRate
+  , nrmse
   ) where
 
 import           Numeric.LinearAlgebra
@@ -221,3 +222,30 @@ errorRate tgtLbls cLbls = 100 * fromIntegral errNo / fromIntegral (length tgtLbl
 errors :: Eq a => [(a, a)] -> [(a, a)]
 errors = filter (uncurry (/=))
 {-# SPECIALIZE errors :: [(Int, Int)] -> [(Int, Int)] #-}
+
+mean :: (V.Storable a, Fractional a) => Vector a -> a
+mean xs = V.sum xs / fromIntegral (V.length xs)
+{-# SPECIALISE mean :: Vector Double -> Double #-}
+
+cov :: (V.Storable a, Fractional a) => Vector a -> Vector a -> a
+cov xs ys = V.sum (V.zipWith (*) xs' ys') / fromIntegral (V.length xs')
+  where
+    xs' = V.map (`subtract` (mean xs)) xs
+    ys' = V.map (`subtract` (mean ys)) ys
+{-# SPECIALISE cov :: Vector Double -> Vector Double -> Double #-}
+
+var :: (V.Storable a, Fractional a) => Vector a -> a
+var x = cov x x
+{-# SPECIALISE var :: Vector Double -> Double #-}
+
+-- | Normalized root mean square error (NRMSE),
+-- one of the most common error measures for series prediction
+nrmse :: (V.Storable a, Floating a)
+      => Vector a  -- ^ Target signal
+      -> Vector a  -- ^ Predicted signal
+      -> a  -- ^ NRMSE
+nrmse target estimated = sqrt (meanerr / targetVariance)
+  where
+    meanerr = mean. V.map (^2) $ V.zipWith (-) estimated target
+    targetVariance = var target
+{-# SPECIALIZE nrmse :: Vector Double -> Vector Double -> Double #-}
