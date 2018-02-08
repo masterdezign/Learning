@@ -8,6 +8,7 @@
 module Learning (
   -- * Datasets
   Dataset (..)
+  , Learning.fromList
 
   -- * Principal component analysis
   , PCA (..)
