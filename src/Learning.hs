@@ -13,6 +13,7 @@ module Learning (
   -- * Principal component analysis
   , PCA (..)
   , pca
+  , pca'
 
   -- * Supervised learning
   , Teacher
@@ -56,15 +57,17 @@ fromList xs = let (samples', labels') = unzip xs
 -- covarianceMatrix :: Matrix Double -> Matrix Double
 -- covarianceMatrix x = ((tr x) <> x) / (fromIntegral $ rows x)
 
--- | Produces a compression matrix u'
-pca' :: Int -> [Vector Double] -> Matrix Double
-pca' maxDim xs = tr u ? [0..maxDim - 1]
+-- | Compute the covariance matrix @sigma@
+-- and return its eigenvectors @u'@ and eigenvalues @s@
+pca' :: [Vector Double]  -- ^ Data samples
+     -> (Matrix Double, Vector Double)
+pca' xs = (u', s)
   where
     xs' = fromBlocks $ map ((: []). tr. reshape 1) xs
-    -- Covariance matrix Sigma
+    -- Covariance matrix
     sigma = snd $ meanCov xs'
-    -- Eigenvectors matrix U
-    (u, _, _) = svd $ unSym sigma
+    -- Eigenvectors matrix u' and eigenvalues vector s
+    (u', s, _) = svd $ unSym sigma
 
 -- | Principal components analysis tools
 data PCA = PCA
@@ -80,11 +83,11 @@ data PCA = PCA
 pca :: Int  -- ^ Number of principal components to preserve
     -> [Vector Double]  -- ^ Analyzed data samples
     -> PCA
-pca maxDim xs = let u' = pca' maxDim xs
-                    u = tr u'
+pca maxDim xs = let (u', _) = pca' xs
+                    u = takeColumns maxDim u'
                 in PCA
                    { _u = u
-                   , _compress = (u' <>). reshape 1
+                   , _compress = (tr u <>). reshape 1
                    , _decompress = flatten. (u <>)
                    }
 
