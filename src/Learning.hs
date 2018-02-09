@@ -152,7 +152,7 @@ learnRegressor xs target =
     Nothing -> Left "Couldn't learn: check `xs` matrix properties"
 
 -- | Create a linear `Readout` using the ridge regression.
--- Similar to @learn@, but instead of a `Classifier` function
+-- Similar to @learnRegressor@, but instead of a `Regressor` function
 -- a (already transposed) `Readout` matrix may be returned.
 learn'
   :: Matrix Double  -- ^ Network state (nonlinear response)
