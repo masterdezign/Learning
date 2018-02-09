@@ -10,7 +10,7 @@ module Learning (
   Dataset (..)
   , Learning.fromList
 
-  -- * Principal component analysis
+  -- * Principal components analysis
   , PCA (..)
   , pca
   , pca'
@@ -28,8 +28,9 @@ module Learning (
   , winnerTakesAll
 
   -- * Evaluation
-  , errors
   , errorRate
+  , errors
+  , accuracy
   , nrmse
   ) where
 
@@ -52,10 +53,11 @@ fromList xs = let (samples', labels') = unzip xs
                  , _labels = labels'
                  }
 
--- | Computes "covariance matrix", alternative to (snd. meanCov).
+-- The snippet below computes "covariance matrix", alternative to (snd. meanCov).
 -- Source: https://hackage.haskell.org/package/mltool-0.1.0.2/docs/src/MachineLearning.PCA.html
--- covarianceMatrix :: Matrix Double -> Matrix Double
--- covarianceMatrix x = ((tr x) <> x) / (fromIntegral $ rows x)
+--
+--     > covarianceMatrix :: Matrix Double -> Matrix Double
+--     > covarianceMatrix x = ((tr x) <> x) / (fromIntegral $ rows x)
 
 -- | Compute the covariance matrix @sigma@
 -- and return its eigenvectors @u'@ and eigenvalues @s@
@@ -79,7 +81,7 @@ data PCA = PCA
   -- ^ Inverse to compression function
   }
 
--- | Principal component analysis (PCA)
+-- | Principal components analysis resulting in `PCA` tools
 pca :: Int  -- ^ Number of principal components to preserve
     -> [Vector Double]  -- ^ Analyzed data samples
     -> PCA
@@ -152,7 +154,7 @@ learnRegressor xs target =
     Nothing -> Left "Couldn't learn: check `xs` matrix properties"
 
 -- | Create a linear `Readout` using the ridge regression.
--- Similar to @learnRegressor@, but instead of a `Regressor` function
+-- Similar to `learnRegressor`, but instead of a `Regressor` function
 -- a (already transposed) `Readout` matrix may be returned.
 learn'
   :: Matrix Double  -- ^ Network state (nonlinear response)
@@ -200,7 +202,8 @@ winnerTakesAll readout klasses = Classifier clf
                 in klasses V.! klass
 
 -- | Evaluate the network state (nonlinear response) according
--- to some `Readout` matrix.
+-- to some `Readout` matrix. Used by classification strategies
+-- such as `winnerTakesAll`.
 scores
   :: Readout  -- ^ `Readout` matrix
   -> Matrix Double  -- ^ Network state
@@ -218,13 +221,28 @@ classify' = winnerTakesAll
   :: Matrix Double -> Vector Int -> Classifier Int
   #-}
 
--- | Error rate in %
+-- | Error rate in %, an error measure for classification tasks
+--
+-- >>> errorRate [1,2,3,4] [1,2,3,7]
+-- 25.0
 errorRate :: (Eq a, Fractional err) => [a] -> [a] -> err
 errorRate tgtLbls cLbls = 100 * fromIntegral errNo / fromIntegral (length tgtLbls)
   where errNo = length $ errors $ zip tgtLbls cLbls
 {-# SPECIALIZE errorRate :: [Int] → [Int] → Double #-}
 
--- | Misclassified cases
+-- | Accuracy of classification, @100% - errorRate@
+--
+-- >>> accuracy [1,2,3,4] [1,2,3,7]
+-- 75.0
+accuracy :: (Eq a, Fractional acc) => [a] -> [a] -> acc
+accuracy tgt clf = let erate = errorRate tgt clf
+                   in 100 - erate
+{-# SPECIALIZE accuracy :: [Int] → [Int] → Double #-}
+
+-- | Pairs of misclassified and correct values
+--
+-- >>> errors $ zip ['x','y','z'] ['x','b','a']
+-- [('y','b'),('z','a')]
 errors :: Eq a => [(a, a)] -> [(a, a)]
 errors = filter (uncurry (/=))
 {-# SPECIALIZE errors :: [(Int, Int)] -> [(Int, Int)] #-}
@@ -245,7 +263,7 @@ var x = cov x x
 {-# SPECIALISE var :: Vector Double -> Double #-}
 
 -- | Normalized root mean square error (NRMSE),
--- one of the most common error measures for series prediction
+-- one of the most common error measures for regression tasks
 nrmse :: (V.Storable a, Floating a)
       => Vector a  -- ^ Target signal
       -> Vector a  -- ^ Predicted signal
