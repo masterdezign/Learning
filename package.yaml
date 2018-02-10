@@ -28,8 +28,8 @@ library:
   source-dirs: src
 
 executables:
-  Learning-exe:
-    main:                Main.hs
+  learning-pca:
+    main:                MainPCA.lhs
     source-dirs:         app
     ghc-options:
     - -threaded
