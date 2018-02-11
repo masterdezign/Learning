@@ -65,9 +65,8 @@ pca' :: [Vector Double]  -- ^ Data samples
      -> (Matrix Double, Vector Double)
 pca' xs = (u', s)
   where
-    xs' = fromBlocks $ map ((: []). tr. reshape 1) xs
     -- Covariance matrix
-    sigma = snd $ meanCov xs'
+    sigma = snd $ meanCov $ fromRows xs
     -- Eigenvectors matrix u' and eigenvalues vector s
     (u', s, _) = svd $ unSym sigma
 
@@ -254,8 +253,8 @@ mean xs = V.sum xs / fromIntegral (V.length xs)
 cov :: (V.Storable a, Fractional a) => Vector a -> Vector a -> a
 cov xs ys = V.sum (V.zipWith (*) xs' ys') / fromIntegral (V.length xs')
   where
-    xs' = V.map (`subtract` (mean xs)) xs
-    ys' = V.map (`subtract` (mean ys)) ys
+    xs' = V.map (`subtract` mean xs) xs
+    ys' = V.map (`subtract` mean ys) ys
 {-# SPECIALISE cov :: Vector Double -> Vector Double -> Double #-}
 
 var :: (V.Storable a, Fractional a) => Vector a -> a
