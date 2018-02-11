@@ -14,6 +14,7 @@ module Learning (
   , PCA (..)
   , pca
   , pca'
+  , pcaVariance
 
   -- * Supervised learning
   , Teacher
@@ -82,15 +83,32 @@ data PCA = PCA
 
 -- | Principal components analysis resulting in `PCA` tools
 pca :: Int  -- ^ Number of principal components to preserve
-    -> [Vector Double]  -- ^ Analyzed data samples
+    -> [Vector Double]  -- ^ Observations
     -> PCA
 pca maxDim xs = let (u', _) = pca' xs
-                    u = takeColumns maxDim u'
-                in PCA
-                   { _u = u
-                   , _compress = (tr u <>). reshape 1
-                   , _decompress = flatten. (u <>)
-                   }
+                in _pca maxDim u'
+
+-- | Perform PCA using the minimal number of principal
+-- components required to retain given variance
+pcaVariance :: Double  -- ^ Retained variance, %
+            -> [Vector Double]  -- ^ Observations
+            -> PCA
+pcaVariance var xs = let (u', eig) = pca' xs
+                         cumul = V.drop 1 $ V.scanl' (+) 0 eig
+                         var' = var / 100  -- Scale 100% -> 1.0
+                         total = V.last cumul
+                         isRetained = map (\v -> let retained = v / total
+                                                 in retained >= var') $ V.toList cumul
+                         dim = fst $ head $ filter snd $ zip [1..] isRetained
+                     in _pca dim u'
+
+_pca :: Int -> Matrix Double -> PCA
+_pca maxDim u' = let u = takeColumns maxDim u'
+                 in PCA
+                    { _u = u
+                    , _compress = (tr u <>). reshape 1
+                    , _decompress = flatten. (u <>)
+                    }
 
 -- | Classifier function that maps some measurements as matrix columns
 -- and corresponding features as rows, into a categorical output.

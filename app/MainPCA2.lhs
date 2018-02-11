@@ -71,3 +71,7 @@ From this data we can conclude that the first two principal components
 contain 96.5% of information. Therefore, we will loose 3.5% of information
 after projecting into two orthogonal axes in the transformed coordinate system
 obtained after PCA.
+
+Hint: to compute compression (dimensionality reduction) and
+decompression functions for specified variance to retain, use
+(_compress. pcaVariance) and (_decompress. pcaVariance) functions.
