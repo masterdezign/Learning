@@ -6,10 +6,9 @@ written in Haskell.
 The name of the package can be interpreted in two ways:
 
 1. Either as "Learning" in "Machine Learning".
-2. Or "Learning" meaning that examples* are written
-in literate style and can be used to discover ML techniques.
-
-*) Work in progress
+2. Or "Learning" meaning that [examples](https://github.com/masterdezign/Learning/tree/master/app)
+are written in [literate style](https://en.wikipedia.org/wiki/Literate_programming)
+and can be used to discover machine learning techniques.
 
 
 ## Getting Started
@@ -30,3 +29,8 @@ Launch the [PCA demo](https://github.com/masterdezign/Learning/blob/master/app/M
 Launch the advanced [PCA demo](https://github.com/masterdezign/Learning/blob/master/app/MainPCA2.lhs)
 
      $ stack exec learning-pca-advanced
+
+### What's next?
+
+Check the [documentation](https://hackage.haskell.org/package/Learning/docs/Learning.html)
+or [open an issue](https://github.com/masterdezign/Learning/issues).

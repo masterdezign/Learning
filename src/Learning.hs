@@ -93,8 +93,8 @@ pca maxDim xs = let (u', _) = pca' xs
                    , _decompress = flatten. (u <>)
                    }
 
--- | Classifier function that maps some network state with measurements as matrix columns
--- and features as rows, into a categorical output.
+-- | Classifier function that maps some measurements as matrix columns
+-- and corresponding features as rows, into a categorical output.
 newtype Classifier a = Classifier { classify :: Matrix Double -> a }
 
 -- | Regressor function that maps some feature matrix
@@ -157,7 +157,7 @@ learnRegressor xs target =
 -- Similar to `learnRegressor`, but instead of a `Regressor` function
 -- a (already transposed) `Readout` matrix may be returned.
 learn'
-  :: Matrix Double  -- ^ Network state (nonlinear response)
+  :: Matrix Double  -- ^ Measurements (feature matrix)
   -> Matrix Double  -- ^ Horizontally concatenated `Teacher` matrices
   -> Maybe Readout
 learn' a b = case ridgeRegression 1e-4 a b of
