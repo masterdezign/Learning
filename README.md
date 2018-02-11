@@ -24,3 +24,9 @@ Use [Stack](http://haskellstack.org).
 Launch the [PCA demo](https://github.com/masterdezign/Learning/blob/master/app/MainPCA.lhs)
 
      $ stack exec learning-pca
+
+### Demo 2: advanced principal components analysis (PCA)
+
+Launch the advanced [PCA demo](https://github.com/masterdezign/Learning/blob/master/app/MainPCA2.lhs)
+
+     $ stack exec learning-pca-advanced

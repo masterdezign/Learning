@@ -38,6 +38,16 @@ executables:
     dependencies:
     - Learning
 
+  learning-pca-advanced:
+    main:                MainPCA2.lhs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - Learning
+
 tests:
   Learning-test:
     main:                Spec.hs
