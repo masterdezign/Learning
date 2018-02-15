@@ -29,14 +29,25 @@ module Learning (
   , winnerTakesAll
 
   -- * Evaluation
+  -- ** Classification
+  , accuracy
   , errorRate
   , errors
-  , accuracy
+  , showConfusion
+  , confusion
+  , Normalize (..)
+  , confusion'
+
+  -- ** Regression
   , nrmse
   ) where
 
 import           Numeric.LinearAlgebra
 import qualified Data.Vector.Storable as V
+import qualified Data.Map as M
+import           Data.List ( nub, sort )
+import           Text.Printf ( printf )
+
 
 -- | A dataset representation for supervised learning
 data Dataset a b = Dataset
@@ -247,20 +258,110 @@ errorRate tgtLbls cLbls = 100 * fromIntegral errNo / fromIntegral (length tgtLbl
   where errNo = length $ errors $ zip tgtLbls cLbls
 {-# SPECIALIZE errorRate :: [Int] → [Int] → Double #-}
 
--- | Accuracy of classification, @100% - errorRate@
+-- | Accuracy of classification, @100% - `errorRate`@
 --
 -- >>> accuracy [1,2,3,4] [1,2,3,7]
 -- 75.0
-accuracy :: (Eq a, Fractional acc) => [a] -> [a] -> acc
+accuracy :: (Eq lab, Fractional acc) => [lab] -> [lab] -> acc
 accuracy tgt clf = let erate = errorRate tgt clf
                    in 100 - erate
 {-# SPECIALIZE accuracy :: [Int] → [Int] → Double #-}
+
+-- | Confusion matrix for arbitrary number of classes (not normalized)
+confusion' :: (Ord lab, Eq lab)
+          => [lab]
+          -- ^ Target labels
+          -> [lab]
+          -- ^ Predicted labels
+          -> M.Map (lab, lab) Int
+          -- ^ Map keys: (target, predicted), values: confusion count
+confusion' tgtlab lab = mp
+  where
+    -- Count all possible pairs of labels
+    mp = foldr g M.empty $ zip tgtlab lab
+    g k mp = M.alter f k mp
+
+    f Nothing = Just 1
+    f (Just x) = Just (x + 1)
+
+-- | Normalization strategies for `confusion` matrix
+data Normalize = ByRow | ByColumn deriving (Show, Eq)
+
+-- | Normalized confusion matrix for arbitrary number of classes
+confusion :: (Ord lab, Eq lab)
+          => Normalize
+          -- ^ Normalize `ByRow` or `ByColumn`
+          -> [lab]
+          -- ^ Target labels
+          -> [lab]
+          -- ^ Predicted labels
+          -> M.Map (lab, lab) Double
+          -- ^ Map keys: (target, predicted), values: normalized confusion
+confusion by tgtlab lab = res
+  where
+    allLabels = sort $ nub tgtlab
+    mp = confusion' tgtlab lab
+    lookup2 k' mp' = case M.lookup k' mp' of
+      Just x -> x
+      _ -> 0
+
+    res = foldr (\i mp' -> let key j = if by == ByRow
+                                 then (i, j)
+                                 else (j, i)
+                               -- Find sum
+                               grp = map (\j -> let k = key j in (k, lookup2 k mp)) allLabels
+                               total = fromIntegral $ sum $ map snd grp
+                           -- Normalize
+                           in foldr (\(k, v) mp'' -> M.insert k (fromIntegral v / total * 100) mp'') mp' grp
+                ) M.empty allLabels
+
+-- | Confusion matrix normalized by row: ASCII representation.
+--
+-- Note: it is assumed that target (true) labels list contains
+-- all possible labels.
+--
+-- @
+--           |  Predicted
+--        ---+------------
+--           | \_ \_ \_ \_ \_
+--      True | \_ \_ \_ \_ \_
+--           | \_ \_ \_ \_ \_
+--     label | \_ \_ \_ \_ \_
+--           | \_ \_ \_ \_ \_
+-- @
+--
+-- >>> putStr $ showConfusion [1, 2, 3, 1] [1, 2, 3, 2]
+--       1     2     3
+-- 1   50.0  50.0   0.0
+-- 2    0.0 100.0   0.0
+-- 3    0.0   0.0 100.0
+showConfusion :: (Ord lab, Eq lab, Show lab)
+          => [lab]  -- ^ Target labels
+          -> [lab]  -- ^ Predicted labels
+          -> String
+showConfusion tgtlab lab = unlines $ predictedLabels: "": table
+  where
+    allLabels = sort $ nub tgtlab
+    mp = confusion ByRow tgtlab lab
+    table = map (fmtRow mp) allLabels
+
+    predictedLabels = let spc1 = replicate 2 ' '
+                          spc2 = replicate 4 ' '
+                      in spc1 ++ (unwords $ map ((spc2 ++). show) allLabels)
+
+    -- Tabulate row
+    fmtRow mp i = unwords (show i: "": line)
+      where
+        fmt x = let s = printf "%.1f" x
+                    l = length s
+                in replicate (5 - l) ' ' ++ s
+        line = map (\j -> fmt $ mp M.! (i, j)) allLabels
 
 -- | Pairs of misclassified and correct values
 --
 -- >>> errors $ zip ['x','y','z'] ['x','b','a']
 -- [('y','b'),('z','a')]
-errors :: Eq a => [(a, a)] -> [(a, a)]
+errors :: Eq lab => [(lab, lab)] -> [(lab, lab)]
 errors = filter (uncurry (/=))
 {-# SPECIALIZE errors :: [(Int, Int)] -> [(Int, Int)] #-}
 
