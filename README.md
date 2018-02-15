@@ -1,7 +1,6 @@
 # Learning
 
-A micro library containing the most common machine learning tools
-written in Haskell.
+A Haskell micro library containing the most common machine learning tools.
 
 The name of the package can be interpreted in two ways:
 
@@ -11,9 +10,18 @@ are written in [literate style](https://en.wikipedia.org/wiki/Literate_programmi
 and can be used to discover machine learning techniques.
 
 
+## Features
+
+* Supervised learning
+  * Ridge regression
+  * Linear classifier
+* Evaluation metrics
+* Principal components analysis
+
+
 ## Getting Started
 
-Use [Stack](http://haskellstack.org).
+Use [Stack](http://haskellstack.org)
 
      $ git clone https://github.com/masterdezign/Learning.git && cd Learning
      $ stack build --install-ghc
@@ -24,7 +32,7 @@ Launch the [PCA demo](https://github.com/masterdezign/Learning/blob/master/app/M
 
      $ stack exec learning-pca
 
-### Demo 2: advanced principal components analysis (PCA)
+### Demo 2: advanced PCA
 
 Launch the advanced [PCA demo](https://github.com/masterdezign/Learning/blob/master/app/MainPCA2.lhs)
 
