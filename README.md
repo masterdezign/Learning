@@ -5,7 +5,7 @@ A Haskell micro library containing the most common machine learning tools.
 The name of the package can be interpreted in two ways:
 
 1. Either as "Learning" in "Machine Learning".
-2. Or "Learning" meaning that [examples](https://github.com/masterdezign/Learning/tree/master/app)
+2. Or "Learning" meaning that [examples](https://github.com/masterdezign/Learning/tree/master/examples)
 are written in [literate style](https://en.wikipedia.org/wiki/Literate_programming)
 and can be used to discover machine learning techniques.
 
@@ -28,13 +28,13 @@ Use [Stack](http://haskellstack.org)
 
 ### Demo 1: principal components analysis (PCA)
 
-Launch the [PCA demo](https://github.com/masterdezign/Learning/blob/master/app/MainPCA.lhs)
+Launch the [PCA demo](https://github.com/masterdezign/Learning/blob/master/examples/PCA/Main.lhs)
 
      $ stack exec learning-pca
 
 ### Demo 2: advanced PCA
 
-Launch the advanced [PCA demo](https://github.com/masterdezign/Learning/blob/master/app/MainPCA2.lhs)
+Launch the advanced [PCA demo](https://github.com/masterdezign/Learning/blob/master/examples/PCA2/Main.lhs)
 
      $ stack exec learning-pca-advanced
 

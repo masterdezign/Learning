@@ -30,8 +30,8 @@ library:
 
 executables:
   learning-pca:
-    main:                MainPCA.lhs
-    source-dirs:         app
+    main:                Main.lhs
+    source-dirs:         examples/PCA
     ghc-options:
     - -threaded
     - -rtsopts
@@ -40,8 +40,8 @@ executables:
     - Learning
 
   learning-pca-advanced:
-    main:                MainPCA2.lhs
-    source-dirs:         app
+    main:                Main.lhs
+    source-dirs:         examples/PCA2
     ghc-options:
     - -threaded
     - -rtsopts
