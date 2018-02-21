@@ -2,7 +2,7 @@ Advanced Principal Components Analysis (PCA) demo
 -------------------------------------------------
 
 
-The tutorial is a continuation of ./MainPCA.lhs
+The tutorial is a continuation of examples/PCA/Main.lhs
 
 Previously, we were able to quickly determine that the food ration
 in Northern Ireland is somewhat different comparing to the other three
