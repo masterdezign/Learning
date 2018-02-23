@@ -1,9 +1,9 @@
 name:                Learning
-version:             0.0.2
+version:             0.0.3
 github:              "masterdezign/Learning"
 license:             BSD3
 author:              "Bogdan Penkovsky"
-maintainer:          "dev at penkovsky [dot] com"
+maintainer:          "dev () penkovsky dot com"
 copyright:           "Bogdan Penkovsky"
 
 extra-source-files:
