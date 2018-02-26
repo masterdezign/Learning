@@ -223,9 +223,10 @@ ridgeRegression μ tA tB = linearSolve oA oB
 winnerTakesAll
   :: (V.Storable a, Eq a)
   => Readout  -- ^ `Readout` matrix
-  -> Vector a  -- ^ Vector of possible classes
-  -> Classifier a  -- ^ `Classifier`
-winnerTakesAll readout klasses = Classifier clf
+  -> Vector a  -- ^ Vector of possible classes (labels)
+  -> Matrix Double  -- ^ Input matrix
+  -> a  -- ^ Label
+winnerTakesAll readout klasses = clf
   where clf x = let klass = maxIndex $ scores readout x
                 in klasses V.! klass
 
@@ -244,7 +245,7 @@ scores trW response = evalScores
 classify'
   :: (V.Storable a, Eq a)
      => Matrix Double -> Vector a -> Classifier a
-classify' = winnerTakesAll
+classify' w kl = Classifier (winnerTakesAll w kl)
 {-# SPECIALIZE classify'
   :: Matrix Double -> Vector Int -> Classifier Int
   #-}
