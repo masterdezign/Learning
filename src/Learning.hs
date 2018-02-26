@@ -279,8 +279,7 @@ confusion' :: (Ord lab, Eq lab)
 confusion' tgtlab lab = mp
   where
     -- Count all possible pairs of labels
-    mp = foldr g M.empty $ zip tgtlab lab
-    g k mp = M.alter f k mp
+    mp = foldr (M.alter f) M.empty $ zip tgtlab lab
 
     f Nothing = Just 1
     f (Just x) = Just (x + 1)
@@ -348,7 +347,7 @@ showConfusion tgtlab lab = unlines $ predictedLabels: "": table
 
     predictedLabels = let spc1 = replicate 2 ' '
                           spc2 = replicate 4 ' '
-                      in spc1 ++ (unwords $ map ((spc2 ++). show) allLabels)
+                      in spc1 ++ unwords (map ((spc2 ++). show) allLabels)
 
     -- Tabulate row
     fmtRow mp i = unwords (show i: "": line)
