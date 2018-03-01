@@ -86,9 +86,9 @@ pca' xs = (u', s)
 data PCA = PCA
   { _u :: Matrix Double
   -- ^ Compression matrix U
-  , _compress :: Vector Double -> Matrix Double
+  , _compress :: Vector Double -> Vector Double
   -- ^ Compression function
-  , _decompress :: Matrix Double -> Vector Double
+  , _decompress :: Vector Double -> Vector Double
   -- ^ Inverse to compression function
   }
 
@@ -117,8 +117,8 @@ _pca :: Int -> Matrix Double -> PCA
 _pca maxDim u' = let u = takeColumns maxDim u'
                  in PCA
                     { _u = u
-                    , _compress = (tr u <>). reshape 1
-                    , _decompress = flatten. (u <>)
+                    , _compress = flatten. (tr u <>). reshape 1
+                    , _decompress = flatten. (u <>). reshape 1
                     }
 
 -- | Classifier function that maps some measurements as matrix columns
