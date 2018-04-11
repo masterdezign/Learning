@@ -42,7 +42,7 @@ module Learning (
   , nrmse
   ) where
 
-import           Numeric.LinearAlgebra
+import           Numeric.LinearAlgebra as LA
 import qualified Data.Vector.Storable as V
 import qualified Data.Map as M
 import           Data.List ( nub, sort )
@@ -69,7 +69,7 @@ fromList xs = let (samples', labels') = unzip xs
 -- Source: https://hackage.haskell.org/package/mltool-0.1.0.2/docs/src/MachineLearning.PCA.html
 --
 --     > covarianceMatrix :: Matrix Double -> Matrix Double
---     > covarianceMatrix x = ((tr x) <> x) / (fromIntegral $ rows x)
+--     > covarianceMatrix x = ((tr x) LA.<> x) / (fromIntegral $ rows x)
 
 -- | Compute the covariance matrix @sigma@
 -- and return its eigenvectors @u'@ and eigenvalues @s@
@@ -117,8 +117,8 @@ _pca :: Int -> Matrix Double -> PCA
 _pca maxDim u' = let u = takeColumns maxDim u'
                  in PCA
                     { _u = u
-                    , _compress = flatten. (tr u <>). reshape 1
-                    , _decompress = flatten. (u <>). reshape 1
+                    , _compress = flatten. (tr u LA.<>). reshape 1
+                    , _decompress = flatten. (u LA.<>). reshape 1
                     }
 
 -- | Classifier function that maps some measurements as matrix columns
@@ -177,7 +177,7 @@ learnRegressor
   -> Either String Regressor
 learnRegressor xs target =
   case learn' xs target of
-    Just readout -> let rgr = Regressor (readout <>)
+    Just readout -> let rgr = Regressor (readout LA.<>)
                     in Right rgr
     Nothing -> Left "Couldn't learn: check `xs` matrix properties"
 
@@ -214,8 +214,8 @@ ridgeRegression ::
   -> Maybe Readout
 ridgeRegression μ tA tB = linearSolve oA oB
   where
-    oA = (tA <> tr tA) + (scalar μ * ident (rows tA))
-    oB = tA <> tr tB
+    oA = (tA LA.<> tr tA) + (scalar μ * ident (rows tA))
+    oB = tA LA.<> tr tB
     _f Nothing = Nothing
     _f (Just x) = Just (tr x)
 
@@ -238,7 +238,7 @@ scores
   -> Matrix Double  -- ^ Network state
   -> Vector Double
 scores trW response = evalScores
-  where w = trW <> response
+  where w = trW LA.<> response
         -- Sum the elements in each row
         evalScores = w #> vector (replicate (cols w) 1.0)
 
