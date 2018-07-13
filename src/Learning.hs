@@ -25,6 +25,8 @@ module Learning (
   , learnClassifier
   , learnRegressor
   , learn'
+  , ridgeRegression
+  , ridgeRegression'
   , scores
   , winnerTakesAll
 
@@ -43,6 +45,10 @@ module Learning (
   ) where
 
 import           Numeric.LinearAlgebra as LA
+import           Numeric.LinearAlgebra.Extra
+                 ( productAA'
+                 , productAB'
+                 )
 import qualified Data.Vector.Storable as V
 import qualified Data.Map as M
 import           Data.List ( nub, sort )
@@ -216,8 +222,20 @@ ridgeRegression μ tA tB = linearSolve oA oB
   where
     oA = (tA LA.<> tr tA) + (scalar μ * ident (rows tA))
     oB = tA LA.<> tr tB
-    _f Nothing = Nothing
-    _f (Just x) = Just (tr x)
+
+-- | Performs the ridge regression using two vector lists:
+-- feature vectors and teacher vectors.
+ridgeRegression' ::
+  Double  -- ^ Regularization constant
+  -> [Vector Double]
+  -> [Vector Double]
+  -> Maybe Readout
+ridgeRegression' μ vAs vBs = linearSolve oA oB
+  where
+    prodA = productAA' vAs
+    eyeA = scalar μ * ident (rows prodA)
+    oA = prodA + eyeA
+    oB = productAB' vAs vBs
 
 -- | Winner-takes-all classification method
 winnerTakesAll

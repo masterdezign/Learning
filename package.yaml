@@ -49,6 +49,12 @@ executables:
     dependencies:
     - Learning
 
+  learning-ridge-regression:
+    main:                Main.hs
+    source-dirs:         examples/Ridge
+    dependencies:
+    - Learning
+
 tests:
   Learning-test:
     main:                Spec.hs
@@ -59,3 +65,13 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - Learning
+
+benchmarks:
+  Learning-bench:
+    main: Bench.hs
+    source-dirs:
+    - bench
+    - src
+    dependencies:
+    - criterion
+    - deepseq
