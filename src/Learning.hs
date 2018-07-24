@@ -51,8 +51,10 @@ import           Numeric.LinearAlgebra.Extra
                  )
 import qualified Data.Vector.Storable as V
 import qualified Data.Map as M
+import           Data.Maybe ( fromJust )
 import           Data.List ( nub, sort )
 import           Text.Printf ( printf )
+import           Streamly
 
 
 -- | A dataset representation for supervised learning
@@ -225,17 +227,19 @@ ridgeRegression μ tA tB = linearSolve oA oB
 
 -- | Performs the ridge regression using two vector lists:
 -- feature vectors and teacher vectors.
-ridgeRegression' ::
-  Double  -- ^ Regularization constant
-  -> [Vector Double]
-  -> [Vector Double]
-  -> Maybe Readout
-ridgeRegression' μ vAs vBs = linearSolve oA oB
-  where
-    prodA = productAA' vAs
-    eyeA = scalar μ * ident (rows prodA)
-    oA = prodA + eyeA
-    oB = productAB' vAs vBs
+ridgeRegression' :: Monad m
+                 => Double  -- ^ Regularization constant
+                 -> SerialT m (Vector Double)  -- ^ Feature vectors stream
+                 -> SerialT m (Vector Double)  -- ^ Teacher vectors stream
+                 -> m (Maybe Readout)
+ridgeRegression' μ vAs vBs = do
+  -- FIXME: avoid fromJust
+  prodA <- fromJust <$> productAA' vAs
+  let eyeA = scalar μ * ident (rows prodA)
+      oA = prodA + eyeA
+  oB <- fromJust <$> productAB' vAs vBs
+  let result = linearSolve oA oB
+  return result
 
 -- | Winner-takes-all classification method
 winnerTakesAll

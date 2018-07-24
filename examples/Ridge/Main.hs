@@ -4,6 +4,8 @@ import           Learning
                  )
 import           Numeric.LinearAlgebra as LA
 import           Prelude hiding ( (<>) )
+import           Streamly
+import qualified Streamly.Prelude as S
 
 -- | Prepend a row of ones
 --
@@ -22,8 +24,12 @@ main = do
   xs <- addBiases <$> loadMatrix "examples/Ridge/in.txt"
   ys <- tr' <$> loadMatrix "examples/Ridge/out.txt"
 
+  -- Simple version
   let regr1 = ridgeRegression 1e-4 xs ys
-  let regr2 = ridgeRegression' 1e-4 (toColumns xs) (toColumns ys)
+
+  -- Streamly version
+  let toS = S.fromList. toColumns
+  regr2 <- ridgeRegression' 1e-4 (toS xs) (toS ys)
 
   putStrLn "Data dimensions"
   print (rows xs, cols xs)
