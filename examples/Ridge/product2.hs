@@ -1,3 +1,4 @@
+import           Data.ByteString.Conversion ( fromByteString' )
 import           Data.Maybe ( fromJust )
 import           Numeric.LinearAlgebra as LA
 import           Streamly
@@ -10,7 +11,7 @@ parse :: LC.ByteString -> LA.Vector Double
 parse s = LA.fromList (_ws s)
 
 _ws :: LC.ByteString -> [Double]
-_ws s = map (read. LC.unpack) (LC.words s)
+_ws s = map (fromJust. fromByteString') (LC.words s)
 
 getRecords :: (LC.ByteString -> LA.Vector Double) -> FilePath -> IO [LA.Vector Double]
 getRecords f path = do
