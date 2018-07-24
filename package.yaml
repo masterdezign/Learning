@@ -54,6 +54,7 @@ executables:
     main:                Main.hs
     source-dirs:         examples/Ridge
     dependencies:
+    - bytestring
     - Learning
 
 tests:

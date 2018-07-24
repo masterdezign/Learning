@@ -18,8 +18,9 @@ def main():
     zs = array(zs)
 
     x = reshape(array(xs + ys), (2, n))
+    x1 = x.transpose()
 
-    savetxt("in.txt", x)
+    savetxt("in.txt", x1)
     savetxt("out.txt", zs)
 
 if __name__ == '__main__':
