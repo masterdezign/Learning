@@ -1,3 +1,5 @@
+import           Data.ByteString.Conversion ( fromByteString' )
+import           Data.Maybe ( fromJust )
 import           Learning
                  ( ridgeRegression
                  , ridgeRegression'
@@ -25,7 +27,7 @@ parse :: LC.ByteString -> LA.Vector Double
 parse s = LA.fromList (_ws s)
 
 _ws :: LC.ByteString -> [Double]
-_ws s = map (read. LC.unpack) (LC.words s)
+_ws s = map (fromJust. fromByteString') (LC.words s)
 
 -- Parses line and prepends constant 1
 parse' :: LC.ByteString -> LA.Vector Double

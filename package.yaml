@@ -55,6 +55,7 @@ executables:
     source-dirs:         examples/Ridge
     dependencies:
     - bytestring
+    - bytestring-conversion >= 0.3
     - Learning
 
 tests:
