@@ -192,10 +192,9 @@ learn' a b = case ridgeRegression 1e-4 a b of
     (Just x) -> Just (tr x)
     _ -> Nothing
 
--- | Create a binary `Teacher` matrix with ones row corresponding to
--- the desired class index
+-- | Create a one-hot encoded `Teacher` matrix
 teacher
-  :: Int  -- ^ Number of classes (labels)
+  :: Int  -- ^ Depth (total number of classes)
   -> Int  -- ^ Desired class index (starting from zero)
   -> Int  -- ^ Number of repeated columns in teacher matrix
   -> Teacher
